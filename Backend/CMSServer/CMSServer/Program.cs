@@ -1,3 +1,6 @@
+using CMSServer.Services.FileSystemManager;
+using System.Reflection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,7 +12,13 @@ builder.Services.AddSwaggerGen();
 //Configuration
 builder.Services.Configure<DbSettings>(builder.Configuration.GetSection("MongoConfig"));
 //Singleton register
+builder.Services.AddSingleton<IFileSystemManagerService, FileSystemManagerService>();
 builder.Services.AddSingleton<UnitOfWork>();
+
+if (!Directory.Exists("UserData"))
+{
+    Directory.CreateDirectory("UserData");
+}
 
 var app = builder.Build();
 

@@ -4,12 +4,12 @@ namespace CMSServer.Data.UserRepo;
 public class UserRepository : IUserRepository
 {
     private IMongoDatabase _mongoDb;
-    private readonly IMongoCollection<User> _collection;
+    private IMongoCollection<User> _users;
 
     public UserRepository(IMongoDatabase db)
     {
         _mongoDb = db;
-        _collection = _mongoDb.GetCollection<User>(CollectionConsts.UserCollectionKey);
+        _users = _mongoDb.GetCollection<User>(CollectionConsts.UserCollectionKey);
     }
 
     public async Task AddUser(User user)
@@ -22,7 +22,7 @@ public class UserRepository : IUserRepository
         User mongoUser = null;
         try
         {
-            mongoUser = (await _collection.FindAsync(filter)).Current.SingleOrDefault();
+            mongoUser = (await _users.FindAsync(filter)).SingleOrDefault();
         }
         catch (Exception ex)
         {
@@ -32,7 +32,7 @@ public class UserRepository : IUserRepository
         if (mongoUser != null)
             throw new ResponseException(409, "User already exists");
 
-        await _collection.InsertOneAsync(user);
+        await _users.InsertOneAsync(user);
     }
 
     public Task DeleteUser(string username)
@@ -49,7 +49,7 @@ public class UserRepository : IUserRepository
         User user = null;
         try
         {
-            user = (await _collection.FindAsync<User>(filter)).Current.SingleOrDefault();
+            user = (await _users.FindAsync<User>(filter)).SingleOrDefault();
         }
         catch (Exception ex)
         {
