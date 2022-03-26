@@ -1,4 +1,5 @@
-﻿using CMSServer.Data.FolderRepo;
+﻿using CMSServer.Data.AuthRepo;
+using CMSServer.Data.FolderRepo;
 using CMSServer.Data.UserRepo;
 using CMSServer.Services.FileSystemManager;
 using Microsoft.Extensions.Options;
@@ -18,10 +19,14 @@ public class UnitOfWork
         _fileSystemManager = fsm;
     }
 
+    private IAuthRepository _authRepository;
     private IUserRepository _userRepository;
     private IFolderRepository _folderRepository;
 
-    public IUserRepository UserRepository { get => _userRepository ??= new UserRepository(_mongoDb); }
+
+    public IAuthRepository AuthRepository { get => _authRepository ??= new AuthRepository(this); }
+
+    public IUserRepository UserRepository { get => _userRepository ??= new UserRepository(_mongoDb, this); }
 
     public IFolderRepository FolderRepository { get => _folderRepository ??= new FolderRepository(_mongoDb, _fileSystemManager); }
 }

@@ -40,11 +40,11 @@ public class FolderRepository : IFolderRepository
         if (dbFolder != null)
             throw new ResponseException(409, "Folder already exists");
 
-        var parentFilter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), dbFolderEntry.Parent);
         Folder parent = null;
+        var parentFilter = Builders<Folder>.Filter.Eq(nameof(parent.FolderPath), dbFolderEntry.Parent);
         try
         {
-            parent = (await _folders.FindAsync(filter)).SingleOrDefault();
+            parent = (await _folders.FindAsync(parentFilter)).SingleOrDefault();
         }
         catch (Exception ex)
         {
@@ -66,6 +66,28 @@ public class FolderRepository : IFolderRepository
         var updateFilter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), parent.FolderPath);
         var updateData = Builders<Folder>.Update.Set(nameof(Folder.ChildFolders), parent.ChildFolders);
         await _folders.UpdateOneAsync(updateFilter, updateData);
+    }
+
+    public async Task CreateRootFolderForUser(string root)
+    {
+        if (string.IsNullOrWhiteSpace(root))
+            throw new ResponseException(500, "Something went wrong");
+
+        Folder folder = new Folder() 
+        {
+             FolderPath = root
+        };
+
+        try
+        {
+            await _folders.InsertOneAsync(folder);
+        }
+        catch (Exception ex)
+        {
+            throw new ResponseException(500, ex.Message);
+        }
+
+        _fileSystemManager.CreateDirectory(root);
     }
 
     public Task DeleteFolder(string path)

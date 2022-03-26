@@ -18,5 +18,5 @@ public class User
     [DataMember]
     public string Surname { get; set; }
     [BsonIgnore]
-    public string RootDir { get => $"{Username}.root"; }
+    public string RootDir { get => $"{Username}_root"; }
 }

@@ -19,6 +19,16 @@ public class FileSystemManagerService : IFileSystemManagerService
         Directory.SetCurrentDirectory("..");
     }
 
+    public void CreateDirectory(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ResponseException(500, "Something went wrong");
+
+        Directory.SetCurrentDirectory(FolderNameConsts.ContentRootDir);
+        Directory.CreateDirectory(path);
+        Directory.SetCurrentDirectory("..");
+    }
+
     public FileStream GetFile(string path)
     {
         if (string.IsNullOrWhiteSpace(path))

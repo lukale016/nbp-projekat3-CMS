@@ -5,11 +5,13 @@ public class UserRepository : IUserRepository
 {
     private IMongoDatabase _mongoDb;
     private IMongoCollection<User> _users;
+    private readonly UnitOfWork _unitOfWork;
 
-    public UserRepository(IMongoDatabase db)
+    public UserRepository(IMongoDatabase db, UnitOfWork unit)
     {
         _mongoDb = db;
         _users = _mongoDb.GetCollection<User>(CollectionConsts.UserCollectionKey);
+        _unitOfWork = unit;
     }
 
     public async Task AddUser(User user)
@@ -33,6 +35,8 @@ public class UserRepository : IUserRepository
             throw new ResponseException(409, "User already exists");
 
         await _users.InsertOneAsync(user);
+
+        await _unitOfWork.FolderRepository.CreateRootFolderForUser(user.RootDir);
     }
 
     public Task DeleteUser(string username)

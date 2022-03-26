@@ -9,4 +9,5 @@ public interface IFileSystemManagerService
     FileStream GetFile(string path);
     void StoreFile(IFormFile file);
     void CreateDirectory(string parent, string name);
+    void CreateDirectory(string path);
 }
