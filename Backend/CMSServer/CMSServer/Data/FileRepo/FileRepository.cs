@@ -57,6 +57,7 @@ public class FileRepository : IFileRepository
         byte[] data = null;
         using (FileStream fs = _fileSystem.GetFile(file.FilePath))
         {
+            data = new byte[fs.Length];
             await fs.ReadAsync(data, 0, (int)fs.Length);
         }
 
