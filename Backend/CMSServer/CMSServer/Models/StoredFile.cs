@@ -14,5 +14,5 @@ public class StoredFile
     [DataMember]
     public string Type { get; set; }
     [DataMember]
-    public string Extension { get; set; }
+    public string ContentType { get; set; }
 }

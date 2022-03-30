@@ -3,6 +3,7 @@
 public interface IFolderRepository
 {
     Task<FolderGetDto> GetFolderContent(string path);
+    Task<Folder> GetFolder(string path);
     /// <summary>
     /// Should only be called when new user is registered in the system.
     /// </summary>

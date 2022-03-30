@@ -7,7 +7,7 @@ public interface IFileSystemManagerService
     /// <param name="path">File path</param>
     /// <returns>Opened file stream</returns>
     FileStream GetFile(string path);
-    void StoreFile(IFormFile file);
+    Task<StoredFile> StoreFile(FilePostDto dto);
     void CreateDirectory(string parent, string name);
     void CreateDirectory(string path);
 }

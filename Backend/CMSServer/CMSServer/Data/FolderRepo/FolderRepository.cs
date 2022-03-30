@@ -95,6 +95,25 @@ public class FolderRepository : IFolderRepository
         throw new NotImplementedException();
     }
 
+    public async Task<Folder> GetFolder(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ResponseException(400, "Path not set");
+
+        Folder folder = null;
+        try
+        {
+            var filter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), path);
+            folder = (await _folders.FindAsync(filter)).SingleOrDefault();
+        }
+        catch(Exception ex)
+        {
+            throw new ResponseException(500, ex.Message);
+        }
+
+        return folder;
+    }
+
     public async Task<FolderGetDto> GetFolderContent(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
