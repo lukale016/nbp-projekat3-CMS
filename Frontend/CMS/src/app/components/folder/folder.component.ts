@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
   selector: 'app-folder',
@@ -7,7 +8,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class FolderComponent implements OnInit {
 
-  constructor() { }
+  @Input()
+  public files : Array<string>;
+  public name : string;
+
+  
+  constructor(private userService :UserService) {
+    this.files = [ 'username_root/fajl', 'username_root/fajl2', 'username_root/fajl3', 'username_root/fajl4', 'username_root/fajl5', ];
+    this.name = '';
+   }
 
   ngOnInit(): void {
   }
