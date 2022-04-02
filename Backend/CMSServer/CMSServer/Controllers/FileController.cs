@@ -63,7 +63,7 @@ public class FileController : Controller
         }
     }
 
-    [HttpDelete("DeleteFolder")]
+    [HttpDelete("DeleteFile")]
     public async Task<ActionResult> DeleteFile([FromBody]FileDeleteDto dto)
     {
         try
