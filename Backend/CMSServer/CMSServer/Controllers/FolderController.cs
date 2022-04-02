@@ -37,4 +37,31 @@ public class FolderController : Controller
             return StatusCode(ex.Status, ex.Message);
         }
     }
+
+    [HttpPut("UpdateFolder")]
+    public async Task<ActionResult<FolderGetDto>> UpdateFolder([FromBody]FolderPutDto dto)
+    {
+        try
+        {
+            return await _unitOfWork.FolderRepository.UpdateFolder(dto);
+        }
+        catch (ResponseException ex)
+        {
+            return StatusCode(ex.Status, ex.Message);
+        }
+    }
+
+    [HttpDelete("DeleteFolder")]
+    public async Task<ActionResult> DeleteFolder([FromBody]string path)
+    {
+        try
+        {
+            await _unitOfWork.FolderRepository.DeleteFolder(path);
+            return Ok("Folder deleted successfully");
+        }
+        catch (ResponseException ex)
+        {
+            return StatusCode(ex.Status, ex.Message);
+        }
+    }
 }

@@ -9,6 +9,6 @@ public interface IFolderRepository
     /// </summary>
     Task CreateRootFolderForUser(string username);
     Task CreateFolder(FolderPostDto folder);
-    Task<string> UpdateFolder(string oldPath, string newName);
+    Task<FolderGetDto> UpdateFolder(FolderPutDto dto);
     Task DeleteFolder(string path);
 }

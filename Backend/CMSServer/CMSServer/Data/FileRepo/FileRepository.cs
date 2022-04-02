@@ -16,9 +16,37 @@ public class FileRepository : IFileRepository
         _fileSystem = fms;
         _folders = db.GetCollection<Folder>(CollectionConsts.FolderCollectionKey);
     }
-    public Task DeleteFile(string parent, string name)
+
+    public async Task DeleteFile(FileDeleteDto dto)
     {
-        throw new NotImplementedException();
+        if (dto is null || string.IsNullOrWhiteSpace(dto.Parent) || string.IsNullOrWhiteSpace(dto.Name))
+            throw new ResponseException(400, "Parameters not set");
+
+        Folder folder = await _unitOfWork.FolderRepository.GetFolder(dto.Parent);
+        if (folder is null)
+            throw new ResponseException(404, "Parent folder not found");
+
+        StoredFile fileToDelete = null;
+        try
+        {
+            fileToDelete = folder.ChildFiles.Where(f => f.Name == dto.Name).SingleOrDefault();
+        }
+        catch (Exception ex)
+        {
+            throw new ResponseException(500, ex.Message);
+        }
+
+        if (fileToDelete is null)
+            throw new ResponseException(404, "File not found");
+
+        _fileSystem.DeleteFile(fileToDelete.FilePath);
+
+        folder.ChildFiles.Remove(fileToDelete);
+
+        var filter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), folder.FolderPath);
+        var updateData = Builders<Folder>.Update.Set(nameof(Folder.ChildFiles), folder.ChildFiles);
+
+        await _folders.UpdateOneAsync(filter, updateData);
     }
 
     public async Task<StoredFile> GetFile(FileGetDto dto)
@@ -89,8 +117,58 @@ public class FileRepository : IFileRepository
         await _folders.UpdateOneAsync(updateFilter, updateData);
     }
 
-    public Task<StoredFile> UpdateFile(FilePostDto dto)
+    public async Task<StoredFile> UpdateFile(FilePutDto dto)
     {
-        throw new NotImplementedException();
+        if (dto is null || string.IsNullOrWhiteSpace(dto.Parent) || string.IsNullOrWhiteSpace(dto.OldName) || string.IsNullOrEmpty(dto.NewName))
+            throw new ResponseException(400, "Parameters not set");
+
+        Folder folder = await _unitOfWork.FolderRepository.GetFolder(dto.Parent);
+        if (folder is null)
+            throw new ResponseException(404, "Parent folder not found");
+
+        StoredFile oldFile = null;
+        try
+        {
+            oldFile = folder.ChildFiles.Where(f => f.Name == dto.OldName).SingleOrDefault();
+        }
+        catch(Exception ex)
+        {
+            throw new ResponseException(500, ex.Message);
+        }
+
+        if (oldFile is null)
+            throw new ResponseException(404, "File not found");
+
+        StoredFile newFile = null;
+        try
+        {
+            newFile = folder.ChildFiles.Where(f => f.Name == dto.NewName).SingleOrDefault();
+        }
+        catch (Exception ex)
+        {
+            throw new ResponseException(500, ex.Message);
+        }
+
+        if (newFile is not null)
+            throw new ResponseException(409, "File with updated name already exists");
+
+        newFile = new StoredFile
+        {
+            FilePath = $"{dto.Parent}\\{dto.NewName}",
+            ContentType = oldFile.ContentType,
+            Type = oldFile.Type,
+        };
+
+        _fileSystem.MoveFile(oldFile.FilePath, newFile.FilePath);
+
+        folder.ChildFiles.Remove(oldFile);
+        folder.ChildFiles.Add(newFile);
+
+        var filter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), folder.FolderPath);
+        var updateData = Builders<Folder>.Update.Set(nameof(Folder.ChildFiles), folder.ChildFiles);
+
+        await _folders.UpdateOneAsync(filter, updateData);
+
+        return newFile;        
     }
 }

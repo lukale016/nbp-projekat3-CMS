@@ -9,6 +9,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//CORS
+builder.Services.AddCors();
 //Configuration
 builder.Services.Configure<DbSettings>(builder.Configuration.GetSection("MongoConfig"));
 //Singleton register
@@ -30,6 +32,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(options =>
+{
+    options.AllowAnyHeader()
+           .AllowAnyMethod()
+           .AllowAnyOrigin();
+});
 
 app.UseAuthorization();
 

@@ -39,9 +39,17 @@ public class UserRepository : IUserRepository
         await _unitOfWork.FolderRepository.CreateRootFolderForUser(user.RootDir);
     }
 
-    public Task DeleteUser(string username)
+    public async Task DeleteUser(string username)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(username))
+            throw new ResponseException(400, "Parameters not set");
+
+        User user = await GetUser(username);
+
+        await _unitOfWork.FolderRepository.DeleteFolder(user.RootDir);
+
+        var filter = Builders<User>.Filter.Eq(nameof(User.Username), user.Username);
+        await _users.DeleteOneAsync(filter);
     }
 
     public async Task<User> GetUser(string username)
@@ -66,8 +74,23 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public Task<User> UpdateUser(User user)
+    public async Task<User> UpdateUser(User user)
     {
-        throw new NotImplementedException();
+        if (user is null || string.IsNullOrWhiteSpace(user.Username))
+            throw new ResponseException(400, "Parameters not set");
+
+        User existingUser = await GetUser(user.Username);
+        
+        existingUser.Name = string.IsNullOrWhiteSpace(user.Name) ? existingUser.Name : user.Name;
+        existingUser.Surname = string.IsNullOrWhiteSpace(user.Surname) ? existingUser.Surname : user.Surname;
+        existingUser.Password = string.IsNullOrWhiteSpace(user.Password) ? existingUser.Password : user.Password;
+
+        var filter = Builders<User>.Filter.Eq(nameof(User.Username), existingUser.Username);
+        var updateData = Builders<User>.Update.Set(nameof(User.Name), existingUser.Name)
+                                              .Set(nameof(User.Surname), existingUser.Surname)
+                                              .Set(nameof(User.Password), existingUser.Password);
+        await _users.UpdateOneAsync(filter, updateData);
+
+        return existingUser;
     }
 }

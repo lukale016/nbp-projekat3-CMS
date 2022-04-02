@@ -49,4 +49,31 @@ public class FileController : Controller
             return StatusCode(500, ex.Message);
         }
     }
+
+    [HttpPut("UpdateFile")]
+    public async Task<ActionResult<StoredFile>> UpdateFile([FromBody]FilePutDto dto)
+    {
+        try
+        {
+            return await _unitOfWork.FileRepository.UpdateFile(dto);
+        }
+        catch (ResponseException ex)
+        {
+            return StatusCode(ex.Status, ex.Message);
+        }
+    }
+
+    [HttpDelete("DeleteFolder")]
+    public async Task<ActionResult> DeleteFile([FromBody]FileDeleteDto dto)
+    {
+        try
+        {
+            await _unitOfWork.FileRepository.DeleteFile(dto);
+            return Ok("File deleted successfully");
+        }
+        catch (ResponseException ex)
+        {
+            return StatusCode(ex.Status, ex.Message);
+        }
+    }
 }

@@ -90,9 +90,22 @@ public class FolderRepository : IFolderRepository
         _fileSystemManager.CreateDirectory(root);
     }
 
-    public Task DeleteFolder(string path)
+    public async Task DeleteFolder(string path)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ResponseException(400, "Path not set");
+
+        Folder folder = await GetFolder(path);
+
+        if (folder is null)
+            throw new ResponseException(404, "Folder not found");
+
+        _fileSystemManager.DeleteDirectoryWithSubItems(folder.FolderPath);
+
+        await DeleteFolderChildren(folder);
+
+        var filter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), folder.FolderPath);
+        await _folders.DeleteOneAsync(filter);
     }
 
     public async Task<Folder> GetFolder(string path)
@@ -142,8 +155,71 @@ public class FolderRepository : IFolderRepository
         return new FolderGetDto(path, result);
     }
 
-    public Task<string> UpdateFolder(string oldPath, string newName)
+    public async Task<FolderGetDto> UpdateFolder(FolderPutDto dto)
     {
-        throw new NotImplementedException();
+        if (dto is null || string.IsNullOrWhiteSpace(dto.OldPath) || string.IsNullOrWhiteSpace(dto.NewName))
+            throw new ResponseException(400, "Parameters not set");
+
+        Folder folder = await GetFolder(dto.OldPath);
+
+        if (folder is null)
+            throw new ResponseException(404, "Folder not found");
+
+        folder.FolderPath = $"{folder.Parent}\\{dto.NewName}";
+
+        _fileSystemManager.MoveDirectory(dto.OldPath, folder.FolderPath);
+        await UpdateFolderChildren(folder, dto.OldPath);
+
+        var filter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), dto.OldPath);
+        await _folders.DeleteOneAsync(filter);
+        await _folders.InsertOneAsync(folder);
+
+        return await GetFolderContent(folder.FolderPath);
+    }
+
+    private async Task UpdateFolderChildren(Folder folder, string oldPath)
+    {
+        if (folder is null)
+            return;
+
+        if(folder.ChildFiles is not null)
+            folder.ChildFiles = folder.ChildFiles.Select(f => new StoredFile() { ContentType = f.ContentType, FilePath = f.FilePath.Replace(oldPath, folder.FolderPath), Type = f.Type }).ToList();
+        if(folder.ChildFolders is not null)
+            foreach(string childFolderName in folder.ChildFolders)
+            {
+                string childOldPath = $"{oldPath}\\{childFolderName}";
+                Folder childFolder = await GetFolder(childOldPath);
+                childFolder.FolderPath = childFolder.FolderPath.Replace(oldPath, folder.FolderPath);
+                await UpdateFolderChildren(childFolder, childOldPath);
+                var filter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), childOldPath);
+                await _folders.DeleteOneAsync(filter);
+                await _folders.InsertOneAsync(childFolder);
+            }
+    }
+
+    private async Task DeleteFolderChildren(Folder folder)
+    {
+        if (folder is null)
+            throw new ResponseException(400, "Parameters not set");
+
+        if(folder.ChildFolders is not null)
+            foreach(string childFolderName in folder.ChildFolders)
+            {
+                string childFolderPath = $"{folder.FolderPath}\\{childFolderName}";
+                Folder childFolder = null;
+                try
+                {
+                    childFolder = await GetFolder(childFolderPath);
+                }
+                catch(ResponseException ex)
+                {
+                    continue;
+                }
+                if (childFolder is null)
+                    continue;
+                await DeleteFolderChildren(childFolder);
+                var filter = Builders<Folder>.Filter.Eq(nameof(Folder.FolderPath), childFolderPath);
+                await _folders.DeleteOneAsync(filter);
+            }
     }
 }

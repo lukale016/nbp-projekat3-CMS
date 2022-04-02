@@ -5,6 +5,6 @@ public interface IFileRepository
     Task<byte[]> ReadFileData(StoredFile file);
     Task<FileInfoAndData> ReadFile(FileGetDto dto);
     Task StoreFile(FilePostDto dto);
-    Task<StoredFile> UpdateFile(FilePostDto dto);
-    Task DeleteFile(string parent, string name);
+    Task<StoredFile> UpdateFile(FilePutDto dto);
+    Task DeleteFile(FileDeleteDto dto);
 }

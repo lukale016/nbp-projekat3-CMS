@@ -30,6 +30,26 @@ public class FileSystemManagerService : IFileSystemManagerService
         Directory.SetCurrentDirectory(FolderNameConsts.ParentFolder);
     }
 
+    public void DeleteDirectoryWithSubItems(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ResponseException(400, "Path not set");
+
+        Directory.SetCurrentDirectory(FolderNameConsts.ContentRootDir);
+        Directory.Delete(path, true);
+        Directory.SetCurrentDirectory(FolderNameConsts.ParentFolder);
+    }
+
+    public void DeleteFile(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            throw new ResponseException(400, "File path not set");
+
+        Directory.SetCurrentDirectory(FolderNameConsts.ContentRootDir);
+        File.Delete(path);
+        Directory.SetCurrentDirectory(FolderNameConsts.ParentFolder);
+    }
+
     public FileStream GetFile(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -38,6 +58,26 @@ public class FileSystemManagerService : IFileSystemManagerService
         FileStream fs = File.OpenRead(path);
         Directory.SetCurrentDirectory(FolderNameConsts.ParentFolder);
         return fs;
+    }
+
+    public void MoveDirectory(string oldPath, string newPath)
+    {
+        if (string.IsNullOrWhiteSpace(oldPath) || string.IsNullOrWhiteSpace(newPath))
+            throw new ResponseException(400, "Parameters not set");
+
+        Directory.SetCurrentDirectory(FolderNameConsts.ContentRootDir);
+        Directory.Move(oldPath, newPath);
+        Directory.SetCurrentDirectory(FolderNameConsts.ParentFolder);
+    }
+
+    public void MoveFile(string oldPath, string newPath)
+    {
+        if (string.IsNullOrWhiteSpace(oldPath) || string.IsNullOrWhiteSpace(newPath))
+            throw new ResponseException(400, "Parameters missing");
+
+        Directory.SetCurrentDirectory(FolderNameConsts.ContentRootDir);
+        File.Move(oldPath, newPath);
+        Directory.SetCurrentDirectory(FolderNameConsts.ParentFolder);
     }
 
     public async Task<StoredFile> StoreFile(FilePostDto dto)
