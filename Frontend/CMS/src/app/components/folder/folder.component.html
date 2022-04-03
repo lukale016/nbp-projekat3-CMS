@@ -1,2 +1,11 @@
-<p>folder works!</p>
-<app-file *ngFor="let file of files" [fileName]="file"></app-file>
+<a class="card cardFolder" target="_blank" rel="noopener" *ngFor="let folder of folders" (click)="folderClicked(folder)">
+    <div class="divDarkBrownTop"></div>
+    <label class="labelFolderName">{{folder}}</label>
+    <div class="divBlueBottom"></div>
+  </a>
+                                                        <!-- fileovi -->
+  <a class="card cardFile" target="_blank" rel="noopener" *ngFor="let file of files" style="cursor: pointer;" (click)="fileClicked(file)">
+    <app-file [fileName]="file"></app-file>
+    <!-- <label>{{file}}.txt</label> -->
+    <div class="divWhiteBottom"></div>
+  </a>

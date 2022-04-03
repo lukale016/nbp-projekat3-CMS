@@ -4,6 +4,9 @@ import { Component, OnInit } from '@angular/core';
 
 import { first } from 'rxjs/operators';
 import { UserService } from 'src/app/services/user/user.service';
+import { User } from 'src/app/models/user';
+import { Folder } from 'src/app/models/folder';
+import { swapSlashes } from 'src/app/helpers/swapSlashes';
 
 @Component({ templateUrl: './login.component.html',  styleUrls: ['./login.component.css'] })
 export class LoginComponent implements OnInit {
@@ -43,8 +46,19 @@ export class LoginComponent implements OnInit {
          this.loading = true;
         // console.log("user:",this.f['username'].value,this.f.['password'].value);
         
-         const response =  await this.userService.login(this.f['username'].value, this.f['password'].value);
-         console.log("return value from login:",response);
+        //  const response =  await this.userService.login(this.f['username'].value, this.f['password'].value);
+        //  console.log("return value from login:",response);
+        this.userService.login(this.f['username'].value, this.f['password'].value)
+        .subscribe( (response :any) => {
+          console.log("user", response);
+          this.userService.setUser(response);
+          this.userService.getFolderContents(response.rootDir).subscribe( (response :any) => {
+            console.log("got folder", response);
+            response.path = swapSlashes(response.path);
+            this.userService.setCurrentFolder(response);
+            this.router.navigate(['/home']);
+          })
+        })
          
       }
 }

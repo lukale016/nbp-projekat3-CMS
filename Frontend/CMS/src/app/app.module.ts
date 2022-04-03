@@ -13,7 +13,11 @@ import { RegisterComponent } from './components/register/register.component';
 import { ControlsComponent } from './components/controls/controls.component';
 import { ContentComponent } from './components/content/content.component';
 import { HttpClientModule } from '@angular/common/http';
+import { FileUploadComponent } from './components/file-upload/file-upload.component';
+import {MatIconModule} from '@angular/material/icon'; 
+import {MatProgressBarModule} from '@angular/material/progress-bar'; 
 
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations'; 
 @NgModule({
   declarations: [
     AppComponent,
@@ -23,7 +27,8 @@ import { HttpClientModule } from '@angular/common/http';
     LoginComponent,
     RegisterComponent,
     ControlsComponent,
-    ContentComponent
+    ContentComponent,
+    FileUploadComponent
   ],
   imports: [
     HttpClientModule,
@@ -31,6 +36,9 @@ import { HttpClientModule } from '@angular/common/http';
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,
+    MatIconModule,
+    MatProgressBarModule,
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

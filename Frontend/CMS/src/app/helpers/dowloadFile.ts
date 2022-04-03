@@ -1,5 +1,6 @@
-export function downloadFile(text :string, fileName :string){
-    var blob = new Blob([text], {type: "text/plain"});
+export function downloadFile(content :any, fileName :string){
+    const type = fileName.endsWith('.txt') ? "text/plain" : "image/*"
+    var blob = new Blob([content], {type: type});
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
